@@ -1,0 +1,1891 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mô phỏng Khoanh Lụi Đề Thi Vật Lý THPTQG 2025</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&display=swap');
+        
+        :root {
+            --paper-color: #fdfcf0;
+            --paper-shadow: rgba(0,0,0,0.15);
+            --ink-blue: #1e3d59;
+            --ink-red: #c14242;
+            --pencil-yellow: #ffd700;
+            --wood-brown: #8b4513;
+            --desk-brown: #a0522d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Kalam', cursive;
+            background: linear-gradient(145deg, #8b4513 0%, #a0522d 50%, #cd853f 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            padding: 10px;
+        }
+
+        /* Hiệu ứng texture gỗ cho bàn */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                repeating-linear-gradient(90deg, 
+                    transparent, transparent 2px, 
+                    rgba(139, 69, 19, 0.1) 2px, 
+                    rgba(139, 69, 19, 0.1) 4px),
+                radial-gradient(circle at 20% 20%, rgba(160, 82, 45, 0.3) 1px, transparent 2px);
+            pointer-events: none;
+            z-index: -2;
+        }
+
+        .desk-items {
+            position: fixed;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Cây bút chì */
+        .pencil {
+            position: absolute;
+            right: 2%;
+            top: 15%;
+            width: 12px;
+            height: 150px;
+            background: linear-gradient(to bottom, 
+                var(--pencil-yellow) 0%, 
+                var(--pencil-yellow) 80%, 
+                var(--wood-brown) 80%, 
+                var(--wood-brown) 90%, 
+                #2c2c2c 90%, 
+                #2c2c2c  100%);
+            border-radius: 6px 6px 2px 2px;
+            transform: rotate(15deg);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+            animation: pencilFloat 3s ease-in-out infinite;
+        }
+
+        .pencil::before {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 8px solid #2c2c2c;
+        }
+
+        .pencil::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 2px;
+            width: 8px;
+            height: 25px;
+            background: linear-gradient(to right, rgba(255,255,255,0.3), transparent);
+            border-radius: 4px;
+        }
+
+        /* Tẩy */
+        .eraser {
+            position: absolute;
+            right: 8%;
+            top: 50%;
+            width: 30px;
+            height: 15px;
+            background: #ff69b4;
+            border-radius: 4px;
+            transform: rotate(-10deg);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            animation: eraserBounce 4s ease-in-out infinite;
+        }
+
+        @keyframes pencilFloat {
+            0%, 100% { transform: rotate(15deg) translateY(0px); }
+            50% { transform: rotate(15deg) translateY(-8px); }
+        }
+
+        @keyframes eraserBounce {
+            0%, 100% { transform: rotate(-10deg) translateY(0px); }
+            50% { transform: rotate(-10deg) translateY(-4px); }
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            position: relative;
+            z-index: 10;
+            animation: paperSlide 1s ease-out;
+        }
+
+        @keyframes paperSlide {
+            from { 
+                transform: translateY(100px) rotate(5deg); 
+                opacity: 0; 
+            }
+            to { 
+                transform: translateY(0) rotate(0deg); 
+                opacity: 1; 
+            }
+        }
+
+        .paper {
+            background: var(--paper-color);
+            padding: 30px;
+            position: relative;
+            box-shadow: 
+                0 1px 3px rgba(0,0,0,0.12),
+                0 8px 25px var(--paper-shadow),
+                inset 0 0 0 1px rgba(255,255,255,0.5);
+            transform: rotate(-1deg);
+            border-radius: 2px;
+        }
+
+        .paper::before {
+            content: '';
+            position: absolute;
+            left: 50px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #ff6b6b;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .paper::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            height: 100%;
+            background-image: repeating-linear-gradient(
+                transparent 0px,
+                transparent 25px,
+                rgba(139, 69, 19, 0.15) 25px,
+                rgba(139, 69, 19, 0.15) 27px
+            );
+            pointer-events: none;
+        }
+
+        .paper-corner {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 25px;
+            height: 25px;
+            background: var(--desk-brown);
+            clip-path: polygon(100% 0, 0 100%, 100% 100%);
+            pointer-events: none;
+        }
+
+        /* Header thông tin thi */
+        .exam-header {
+            border: 2px solid var(--ink-blue);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            background: rgba(255,255,255,0.5);
+            position: relative;
+            z-index: 5;
+        }
+
+        .exam-title {
+            text-align: center;
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--ink-blue);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .exam-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .info-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: var(--ink-red);
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .info-input {
+            padding: 8px 12px;
+            border: 1px solid var(--ink-blue);
+            border-radius: 5px;
+            font-family: 'Kalam', cursive;
+            font-size: 1em;
+            background: rgba(255,255,255,0.8);
+        }
+
+        .info-display {
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.3);
+            border: 1px dashed var(--ink-blue);
+            border-radius: 5px;
+            font-weight: 600;
+            color: var(--ink-blue);
+        }
+
+        /* Timer */
+        .timer-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--ink-red);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: 700;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            animation: timerPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes timerPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .timer-warning {
+            background: #e67e22 !important;
+            animation: timerBlink 1s ease-in-out infinite !important;
+        }
+
+        .timer-danger {
+            background: #c0392b !important;
+            animation: timerBlink 0.5s ease-in-out infinite !important;
+        }
+
+        @keyframes timerBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Copy button */
+        .copy-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .copy-btn {
+            background: linear-gradient(45deg, #9b59b6, #8e44ad);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            font-family: 'Kalam', cursive;
+        }
+
+        .copy-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+
+        .copy-btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .copy-cooldown {
+            font-size: 0.8em;
+            margin-top: 5px;
+            text-align: center;
+            color: white;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Kalam', cursive;
+            color: var(--ink-blue);
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 2;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2em;
+            font-weight: 700;
+            transform: rotate(0.5deg);
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            font-size: 1.3em;
+            color: var(--ink-red);
+            border-bottom: 2px dashed var(--ink-red);
+            padding-bottom: 8px;
+            transform: rotate(-0.3deg);
+        }
+
+        .subtitle {
+            text-align: center;
+            font-style: italic;
+            color: #666;
+            margin-bottom: 30px;
+            transform: rotate(-0.2deg);
+        }
+
+        .get-exam-btn {
+            display: block;
+            width: 100%;
+            padding: 18px;
+            font-size: 1.4em;
+            font-weight: 700;
+            color: white;
+            background: linear-gradient(45deg, #2ecc71, #27ae60);
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 25px 0;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            font-family: 'Kalam', cursive;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            z-index: 10;
+            position: relative;
+        }
+
+        .get-exam-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 22px rgba(0,0,0,0.4);
+        }
+
+        .change-exam-btn {
+            display: none;
+            width: 100%;
+            padding: 12px;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+            border: none;
+            border-radius: 18px;
+            cursor: pointer;
+            margin: 15px 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            font-family: 'Kalam', cursive;
+            z-index: 10;
+            position: relative;
+        }
+
+        .exam-content {
+            display: none;
+        }
+
+        .question-group {
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 3;
+        }
+
+        .question {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.3);
+            border-left: 4px solid var(--ink-blue);
+            border-radius: 0 8px 8px 0;
+            position: relative;
+            transform: rotate(0.2deg);
+            animation: questionAppear 0.6s ease-out;
+            font-weight: 400;
+            z-index: 4;
+        }
+
+        @keyframes questionAppear {
+            from { 
+                opacity: 0; 
+                transform: translateX(-50px) rotate(0.2deg); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateX(0) rotate(0.2deg); 
+            }
+        }
+
+        .question-text {
+            font-size: 1em;
+            color: var(--ink-blue);
+            line-height: 1.4;
+            margin-bottom: 15px;
+        }
+
+        .question-mcq {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .question-number {
+            min-width: 70px;
+            font-weight: 700;
+            color: var(--ink-red);
+            flex-shrink: 0;
+        }
+
+        .options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 10px;
+            z-index: 5;
+            position: relative;
+        }
+
+        .options label {
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.8);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            position: relative;
+            z-index: 6;
+            user-select: none;
+            min-width: 120px;
+        }
+
+        .options label:hover {
+            background: rgba(30, 61, 89, 0.1);
+            border-color: var(--ink-blue);
+            transform: scale(1.03);
+        }
+
+        .options label.selected {
+            background: rgba(30, 61, 89, 0.2);
+            border-color: var(--ink-blue);
+            box-shadow: 0 0 8px rgba(30, 61, 89, 0.3);
+        }
+
+        .options input[type="radio"] {
+            margin-right: 8px;
+            accent-color: var(--ink-blue);
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Cải thiện phần đúng/sai */
+        .tf-question {
+            background: rgba(255,255,255,0.4);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .tf-statement {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 15px 0;
+            border-bottom: 1px dashed rgba(30, 61, 89, 0.3);
+            gap: 15px;
+        }
+
+        .tf-statement:last-child {
+            border-bottom: none;
+        }
+
+        .tf-statement-content {
+            flex: 1;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .tf-statement-letter {
+            font-weight: 700;
+            color: var(--ink-red);
+            font-size: 1.1em;
+            min-width: 25px;
+        }
+
+        .tf-statement-text {
+            flex: 1;
+            color: var(--ink-blue);
+            line-height: 1.4;
+        }
+
+        .tf-options {
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .tf-options label {
+            padding: 8px 15px;
+            min-width: 70px;
+            justify-content: center;
+        }
+
+        /* NEW: Fill in the blank with 4 boxes */
+        .fill-in-the-blank-container {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .fill-in-the-blank-container input {
+            width: 50px;
+            height: 60px;
+            padding: 5px;
+            border: 2px dashed var(--ink-blue);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.9);
+            text-align: center;
+            font-size: 1.5em;
+            font-family: 'Kalam', cursive;
+            font-weight: 700;
+            color: var(--ink-blue);
+            transition: all 0.3s ease;
+            z-index: 5;
+            position: relative;
+        }
+
+        .fill-in-the-blank-container input:focus {
+            outline: none;
+            border-color: var(--ink-red);
+            background: white;
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(30, 61, 89, 0.3);
+        }
+
+        .submit-btn, .history-btn {
+            display: block;
+            width: 100%;
+            padding: 18px;
+            font-size: 1.4em;
+            font-weight: 700;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            font-family: 'Kalam', cursive;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            z-index: 10;
+            position: relative;
+        }
+        
+        .submit-btn {
+             background: linear-gradient(45deg, var(--ink-red), #e74c3c);
+             margin-top: 30px;
+        }
+        
+        .history-btn {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            margin-top: 15px;
+            font-size: 1.2em;
+            padding: 15px;
+        }
+
+        .submit-btn:hover, .history-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.4);
+        }
+
+        .submit-btn:active, .history-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        #results {
+            margin-top: 40px;
+            padding: 25px;
+            background: rgba(255, 235, 205, 0.9);
+            border: 3px dashed var(--ink-red);
+            border-radius: 15px;
+            display: none;
+            animation: resultSlide 0.8s ease-out;
+            position: relative;
+            transform: rotate(-0.5deg);
+            z-index: 5;
+        }
+
+        @keyframes resultSlide {
+            from { 
+                opacity: 0; 
+                transform: translateY(50px) rotate(-0.5deg); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0) rotate(-0.5deg); 
+            }
+        }
+
+        #score {
+            font-size: 3.5em;
+            font-weight: 700;
+            color: var(--ink-red);
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+            animation: scoreGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes scoreGlow {
+            from { text-shadow: 3px 3px 6px rgba(193, 66, 66, 0.5); }
+            to { text-shadow: 3px 3px 15px rgba(193, 66, 66, 0.8); }
+        }
+
+        .result-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            font-weight: 500;
+            animation: resultItemSlide 0.5s ease-out;
+        }
+
+        @keyframes resultItemSlide {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .correct {
+            background: rgba(46, 204, 113, 0.2);
+            border-left: 5px solid #2ecc71;
+            color: #27ae60;
+        }
+
+        .incorrect {
+            background: rgba(231, 76, 60, 0.2);
+            border-left: 5px solid #e74c3c;
+            color: #c0392b;
+        }
+
+        .tf-result-block {
+            background: rgba(255,255,255,0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .tf-result-block h4, .tf-result-block h5 {
+            text-align: center;
+            color: var(--ink-red);
+            margin: 10px 0;
+        }
+
+        /* Copy notification */
+        .copy-notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            font-size: 1.2em;
+            font-weight: 600;
+            z-index: 2000;
+            display: none;
+            animation: notificationShow 0.5s ease-out;
+        }
+
+        @keyframes notificationShow {
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .copy-neutral {
+             background: rgba(52, 152, 219, 0.9) !important;
+        }
+
+        .copy-fail {
+            background: rgba(231, 76, 60, 0.9) !important;
+        }
+
+        .copy-caught {
+            background: rgba(192, 57, 43, 0.9) !important;
+            animation: caughtShake 0.8s ease-in-out !important;
+        }
+
+        @keyframes caughtShake {
+            0%, 100% { transform: translate(-50%, -50%) rotate(0deg); }
+            25% { transform: translate(-50%, -50%) rotate(-5deg); }
+            75% { transform: translate(-50%, -50%) rotate(5deg); }
+        }
+
+        /* Exam grades section */
+        .grade-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255,255,255,0.5);
+            border: 2px dashed var(--ink-blue);
+            border-radius: 10px;
+            display: none;
+        }
+
+        .grade-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 5px;
+        }
+        
+        .grade-row span:last-child {
+            text-align: right;
+            flex-basis: 70%;
+        }
+
+        .signature-section {
+            text-align: center;
+            margin-top: 20px;
+            font-style: italic;
+            color: var(--ink-blue);
+        }
+        
+        /* History Modal */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 2000; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.6);
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background-color: var(--paper-color);
+            margin: 10% auto;
+            padding: 30px;
+            border: 5px solid var(--desk-brown);
+            border-radius: 10px;
+            width: 90%;
+            max-width: 800px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            position: relative;
+        }
+
+        .close-btn {
+            color: #aaa;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 32px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .close-btn:hover,
+        .close-btn:focus {
+            color: var(--ink-red);
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        #history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        #history-table th, #history-table td {
+            border: 1px solid var(--ink-blue);
+            padding: 10px;
+            text-align: left;
+            font-size: 0.9em;
+        }
+        
+        #history-table th {
+            background-color: var(--ink-blue);
+            color: white;
+            font-weight: 700;
+        }
+        
+        #history-table tr:nth-child(even) {
+            background-color: rgba(30, 61, 89, 0.05);
+        }
+
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container { 
+                margin: 10px auto; 
+                max-width: 95%;
+            }
+            .paper { 
+                padding: 20px; 
+                transform: rotate(0deg);
+            }
+            .pencil { 
+                display: none;
+            }
+            .eraser { 
+                 display: none;
+            }
+            .exam-title { 
+                font-size: 1.4em; 
+            }
+            .exam-info {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            .timer-container {
+                top: 10px;
+                right: 10px;
+                padding: 10px;
+                font-size: 1em;
+            }
+            .copy-container {
+                bottom: 10px;
+                right: 10px;
+            }
+            .copy-btn {
+                padding: 12px 15px;
+                font-size: 0.9em;
+            }
+            .options { 
+                flex-direction: column; 
+                align-items: flex-start;
+                gap: 8px;
+            }
+            .options label {
+                width: 100%;
+                min-width: auto;
+            }
+            .question-mcq { 
+                flex-direction: column; 
+                gap: 8px;
+            }
+            .tf-statement {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            .tf-options {
+                align-self: flex-end;
+            }
+            .fill-in-the-blank-container input {
+                width: 45px;
+                height: 55px;
+                font-size: 1.2em;
+            }
+            #score {
+                font-size: 2.5em;
+            }
+            .modal-content {
+                width: 95%;
+                margin: 15% auto;
+                padding: 20px;
+            }
+            #history-table th, #history-table td {
+                padding: 6px;
+                font-size: 0.8em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .paper {
+                padding: 15px;
+            }
+            .exam-title {
+                font-size: 1.2em;
+            }
+            .timer-container {
+                font-size: 0.9em;
+                padding: 8px;
+            }
+            .question-number {
+                min-width: 60px;
+            }
+            .tf-statement-content {
+                flex-direction: column;
+                gap: 5px;
+            }
+            .tf-options label {
+                padding: 6px 10px;
+                min-width: 60px;
+                font-size: 0.9em;
+            }
+            .fill-in-the-blank-container {
+                gap: 5px;
+            }
+            .fill-in-the-blank-container input {
+                width: 40px;
+                height: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="desk-items">
+        <div class="pencil"></div>
+        <div class="eraser"></div>
+    </div>
+
+    <!-- Timer -->
+    <div class="timer-container" id="timer" style="display: none;">
+        <div id="timeDisplay">50:00</div>
+        <div style="font-size: 0.7em;">Thời gian còn lại</div>
+    </div>
+
+    <!-- Copy button -->
+    <div class="copy-container">
+        <button class="copy-btn" id="copyBtn" onclick="attemptCopy()" disabled>
+            🔍 Cọp py bạn cùng bàn
+        </button>
+        <div class="copy-cooldown" id="copyCooldown"></div>
+    </div>
+
+    <!-- Copy notification -->
+    <div class="copy-notification" id="copyNotification"></div>
+
+    <div class="container">
+        <div class="paper">
+            <div class="paper-corner"></div>
+            
+            <div class="exam-header">
+                <div class="exam-title">🎓 Kỳ Thi Tốt Nghiệp THPT Quốc Gia 2025</div>
+                <div style="text-align: center; font-weight: 600; color: var(--ink-red); margin-bottom: 15px;">
+                    Môn: VẬT LÝ - Thời gian làm bài: 50 phút
+                </div>
+                
+                <div class="exam-info">
+                    <div class="info-group">
+                        <label class="info-label">Họ và tên thí sinh:</label>
+                        <input type="text" class="info-input" id="studentName" placeholder="Nhập họ tên...">
+                    </div>
+                    <div class="info-group">
+                        <label class="info-label">Số báo danh:</label>
+                        <input type="text" class="info-input" id="studentId" placeholder="Nhập SBD...">
+                    </div>
+                    <div class="info-group">
+                        <label class="info-label">Mã đề thi:</label>
+                        <div class="info-display" id="examCode">---</div>
+                    </div>
+                    <div class="info-group">
+                        <label class="info-label">Địa điểm thi:</label>
+                        <input type="text" class="info-input" id="examLocation" placeholder="Nhập địa điểm...">
+                    </div>
+                </div>
+            </div>
+            
+            <h1>Mô phỏng Khoanh Lụi Đề Thi Vật Lý THPTQG 2025</h1>
+            <p class="subtitle">🎲 Hãy nhận đề và khoanh lụi xem vận may của bạn tới đâu! 🎲</p>
+            
+            <button class="get-exam-btn" id="getExamBtn" onclick="generateNewExam()">
+                📝 NHẬN ĐỀ THI NGẪU NHIÊN
+            </button>
+
+            <div class="exam-content" id="examContent">
+                <button class="change-exam-btn" id="changeExamBtn" onclick="generateNewExam()">
+                    🔄 Thưa thầy em muốn đổi mã đề
+                </button>
+                
+                <form id="examForm">
+                    <div class="question-group">
+                        <h2>🔵 Phần I: Trắc nghiệm (18 câu - 4,5 điểm)</h2>
+                        <div id="multiple-choice-questions"></div>
+                    </div>
+
+                    <div class="question-group">
+                        <h2>🟡 Phần II: Đúng - Sai (4 câu, mỗi câu 4 ý - 4,0 điểm)</h2>
+                        <div id="true-false-questions"></div>
+                    </div>
+
+                    <div class="question-group">
+                        <h2>🟢 Phần III: Trả lời ngắn (6 câu - 1,5 điểm)</h2>
+                        <div id="fill-in-the-blank-questions"></div>
+                    </div>
+
+                    <button type="submit" class="submit-btn">💥 NỘP BÀI XEM NHÂN PHẨM 💥</button>
+                </form>
+
+                <div id="results">
+                    <h2>🎯 KẾT QUẢ VẬN MAY</h2>
+                    <p id="score"></p>
+                    <h3>📊 Phân tích Đáp án</h3>
+                    <div id="result-details"></div>
+                </div>
+                
+                <div class="grade-section" id="gradeSection">
+                    <h3 style="text-align: center; color: var(--ink-blue);">📋 PHIẾU CHẤM ĐIỂM</h3>
+                    <div class="grade-row">
+                        <span><strong>Điểm bài thi:</strong></span>
+                        <span id="finalGrade">---</span>
+                    </div>
+                    <div class="grade-row">
+                        <span><strong>Nhận xét:</strong></span>
+                        <span id="gradeComment">---</span>
+                    </div>
+                    <div class="signature-section">
+                        <p><strong>Giám thị coi thi</strong></p>
+                        <p style="margin-top: 10px; font-family: 'Brush Script MT', cursive; font-size: 1.2em;">
+                           ✍️ <em>Đã ký</em>
+                        </p>
+                    </div>
+                </div>
+                
+                <button class="history-btn" id="showHistoryBtn">
+                    📜 XEM LỊCH SỬ LỤI
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- History Modal -->
+    <div id="historyModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" id="closeHistoryModal">&times;</span>
+            <h2 style="text-align: center; color: var(--ink-red);">📜 Lịch Sử Lụi</h2>
+            <div style="max-height: 400px; overflow-y: auto;">
+                <table id="history-table">
+                    <thead>
+                        <tr>
+                            <th>Ngày Thi</th>
+                            <th>Kỳ Thi</th>
+                            <th>Họ Tên</th>
+                            <th>SBD</th>
+                            <th>Mã Đề</th>
+                            <th>Điểm</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table-body">
+                        <!-- History data will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Trang đã load thành công! Phiên bản nâng cấp với ngân hàng đề đầy đủ.');
+        
+        // --- DOM Elements ---
+        const examForm = document.getElementById('examForm');
+        const mcqContainer = document.getElementById('multiple-choice-questions');
+        const tfContainer = document.getElementById('true-false-questions');
+        const fibContainer = document.getElementById('fill-in-the-blank-questions');
+        const resultsDiv = document.getElementById('results');
+        const scoreEl = document.getElementById('score');
+        const resultDetailsEl = document.getElementById('result-details');
+        const examContent = document.getElementById('examContent');
+        const getExamBtn = document.getElementById('getExamBtn');
+        const changeExamBtn = document.getElementById('changeExamBtn');
+        
+        const timerEl = document.getElementById('timer');
+        const timeDisplayEl = document.getElementById('timeDisplay');
+        
+        const copyBtn = document.getElementById('copyBtn');
+        const copyCooldownEl = document.getElementById('copyCooldown');
+        const copyNotificationEl = document.getElementById('copyNotification');
+        
+        const studentNameEl = document.getElementById('studentName');
+        const studentIdEl = document.getElementById('studentId');
+        const examCodeEl = document.getElementById('examCode');
+        const examLocationEl = document.getElementById('examLocation');
+        const gradeSectionEl = document.getElementById('gradeSection');
+        const finalGradeEl = document.getElementById('finalGrade');
+        const gradeCommentEl = document.getElementById('gradeComment');
+
+        const showHistoryBtn = document.getElementById('showHistoryBtn');
+        const historyModal = document.getElementById('historyModal');
+        const closeHistoryModal = document.getElementById('closeHistoryModal');
+        const historyTableBody = document.getElementById('history-table-body');
+
+        const EXAM_CONFIG = {
+            mcq: { count: 18, pointsEach: 0.25 },
+            trueFalse: { count: 4, maxPoints: 1.0 },
+            fillIn: { count: 6, pointsEach: 0.25 }
+        };
+
+        let scoreHistory = JSON.parse(localStorage.getItem('khoanhluiHistory_v2')) || [];
+        let currentAnswers = {};
+        let currentExamQuestions = {};
+        let timerInterval = null;
+        let timeLeft = 50 * 60;
+        let copyAttempts = 0;
+        let lastCopyTime = 0;
+        let copyCooldownTimer = null;
+
+        const RANDOM_NAMES = ["Nguyễn Văn Khoanh", "Trần Thị Lụi", "Lê Văn Giang", "Phạm Thị Hù", "Hoàng Văn Đoán", "Vũ Thị Mò", "Đặng Văn Chọn", "Bùi Thị Bừa", "Ngô Văn May", "Dương Thị Rủi", "Lý Văn Số", "Tô Thị Phận", "Đinh Văn Chắc", "Hồ Thị Chắn", "Võ Văn Liều", "Trịnh Thị Bạo"];
+        const RANDOM_EXAM_NAMES = ["Kỳ thi Thử Vận May", "Kỳ thi Đo Nhân Phẩm", "Kỳ thi Quyết Định Tương Lai", "Kỳ thi Thách Thức Lượng Tử", "Kỳ thi Vượt Ngư Môn", "Kỳ thi Chống Liệt"];
+        
+        // --- START: NGÂN HÀNG ĐỀ ĐẦY ĐỦ ---
+
+        // NGÂN HÀNG ĐỀ THI - 100 câu trắc nghiệm
+        const MCQ_BANK = [
+            "Nếu một hạt lượng tử đang nhảy múa với bóng ma của Newton trong không gian Hilbert, thì lực hấp dẫn giữa chúng sẽ biến đổi như thế nào khi thời gian chảy ngược?",
+            "Tốc độ ánh sáng trong môi trường chân không chứa đầy bọt xà phòng vô hình là bao nhiêu, nếu tính đến hiệu ứng của âm thanh từ sao Hỏa?",
+            "Một electron đang tranh luận với proton về định luật Ohm trong vũ trụ song song nơi điện trở là cảm xúc, thì điện áp sẽ thế nào?",
+            "Nếu Trái Đất quay quanh Mặt Trời theo quỹ đạo hình vuông, thì gia tốc hướng tâm sẽ bị ảnh hưởng bởi bao nhiêu con bướm ở Amazon?",
+            "Sóng điện từ lan truyền trong không gian chứa đầy ý nghĩ trừu tượng, thì tần số sẽ dao động như thế nào khi gặp một ý tưởng vô lý?",
+            "Một quả bóng bay đầy helium đang bay lên trời, nhưng nếu helium biến thành triết lý Plato, thì độ cao tối đa là bao nhiêu?",
+            "Định luật bảo toàn năng lượng bị vi phạm khi một con voi đang mơ về năng lượng tối, thì năng lượng dư thừa đi đâu?",
+            "Nếu photon có cảm xúc, thì khi va chạm với gương, chúng sẽ phản xạ như thế nào nếu đang buồn?",
+            "Một hạt Higgs đang ẩn náu trong tủ lạnh, thì trường Higgs sẽ ảnh hưởng đến nhiệt độ như thế nào?",
+            "Sức căng bề mặt của nước trong hồ bơi chứa đầy giấc mơ, thì bọt khí sẽ nổi lên ra sao?",
+            "Nếu lực Lorentz tác dụng lên một electron đang nhảy dây, thì quỹ đạo sẽ hình thành hình gì?",
+            "Áp suất khí quyển trên đỉnh Everest nếu Everest là một ý tưởng trừu tượng, thì sẽ bằng bao nhiêu?",
+            "Một con lắc đơn đang dao động trong không gian đa chiều, thì chu kỳ sẽ thay đổi thế nào khi thêm chiều thứ năm?",
+            "Nếu entropy tăng trong một hệ kín chứa đầy câu đố, thì độ hỗn loạn sẽ như thế nào?",
+            "Quang phổ của một ngôi sao đang thì thầm bí mật, thì bước sóng sẽ dịch chuyển ra sao?",
+            "Một nam châm đang thu hút sắt vụn trong giấc ngủ, thì từ trường sẽ mạnh lên bao nhiêu?",
+            "Định luật Kepler áp dụng cho hành tinh quay quanh Mặt Trời hình tam giác, thì quỹ đạo sẽ thế nào?",
+            "Nếu một lỗ đen nuốt chửng thời gian, thì chân trời sự kiện sẽ mở rộng như thế nào?",
+            "Sóng âm lan truyền trong môi trường chân không đầy ắp im lặng, thì cường độ sẽ là bao nhiêu?",
+            "Một pin điện hóa đang sạc bằng năng lượng từ suy nghĩ, thì điện thế sẽ dao động ra sao?",
+            "Nếu thuyết tương đối tổng quát được áp dụng cho giấc mơ, thì không-thời gian sẽ cong như thế nào?",
+            "Hiệu ứng nhà kính trong khí quyển chứa đầy phép màu, thì nhiệt độ Trái Đất sẽ tăng bao nhiêu?",
+            "Một hạt neutrino đang du hành qua Trái Đất mà không va chạm, nhưng nếu nó dừng lại để chào hỏi, thì khối lượng sẽ thế nào?",
+            "Định luật Archimedes áp dụng cho vật thể chìm trong chất lỏng vô hình, thì lực đẩy sẽ là bao nhiêu?",
+            "Nếu điện trường của một hạt tích điện đang nhảy múa, thì vectơ sẽ chỉ hướng nào?",
+            "Một quả cầu plasma đang lăn trên mặt phẳng nghiêng chứa đầy ý tưởng, thì vận tốc sẽ tăng như thế nào?",
+            "Sóng hấp dẫn từ va chạm lỗ đen nếu lỗ đen đang tranh cãi, thì biên độ sẽ dao động ra sao?",
+            "Nếu nguyên lý bất định Heisenberg áp dụng cho cảm xúc, thì vị trí và động lượng của nỗi buồn sẽ thế nào?",
+            "Một động cơ nhiệt đang hoạt động trong môi trường entropy âm, thì hiệu suất sẽ là bao nhiêu?",
+            "Quang học hình học trong gương cong chứa đầy ảo ảnh, thì tiêu điểm sẽ nằm ở đâu?",
+            "Nếu lực ma sát giữa hai bề mặt đang thì thầm, thì hệ số ma sát sẽ thay đổi thế nào?",
+            "Một hạt quark đang thay đổi màu sắc trong gluon trường, thì lực mạnh sẽ ảnh hưởng ra sao?",
+            "Định luật Boyle cho khí lý tưởng trong bình chứa giấc mơ, thì thể tích sẽ thế nào khi áp suất tăng?",
+            "Nếu electron đang tunneling qua rào cản vô tận, thì xác suất sẽ là bao nhiêu?",
+            "Sóng điện từ trong môi trường siêu dẫn chứa đầy bí ẩn, thì tốc độ sẽ thế nào?",
+            "Một con lắc Foucault đang chứng minh Trái Đất quay, nhưng nếu Trái Đất dừng lại để nghỉ, thì mặt phẳng dao động sẽ ra sao?",
+            "Nếu năng lượng tối đang đẩy vũ trụ giãn nở, nhưng năng lượng tối đang mệt mỏi, thì tốc độ giãn nở sẽ thế nào?",
+            "Quang phổ hấp thụ của nguyên tử hydro trong trạng thái hưng phấn, thì đường phổ sẽ dịch chuyển như thế nào?",
+            "Một máy biến thế đang biến đổi điện áp của dòng chảy ý tưởng, thì tỷ số vòng sẽ là bao nhiêu?",
+            "Nếu định luật Snell cho sự khúc xạ ánh sáng trong môi trường chứa đầy nghi ngờ, thì góc khúc xạ sẽ thế nào?",
+            "Lực Coriolis tác dụng lên một cơn bão đang mơ mộng, thì hướng xoáy sẽ thay đổi ra sao?",
+            "Một hạt boson đang trung gian lực yếu, nhưng nếu lực yếu trở nên mạnh mẽ, thì khối lượng boson sẽ thế nào?",
+            "Định luật Charles cho khí trong bình bay lơ lửng, thì nhiệt độ sẽ ảnh hưởng đến thể tích như thế nào?",
+            "Nếu photon đang entanglement với chính bản thân, thì trạng thái sẽ duy trì bao lâu?",
+            "Sóng đứng trên dây đàn đang rung theo giai điệu vô nghĩa, thì nút sóng sẽ nằm ở đâu?",
+            "Một lò phản ứng hạt nhân đang phân hạch ý tưởng, thì năng lượng giải phóng sẽ là bao nhiêu?",
+            "Nếu hằng số Planck bị thay đổi bởi một phép màu, thì thế giới lượng tử sẽ thế nào?",
+            "Quang học lượng tử trong lăng kính chứa đầy ảo mộng, thì sự phân tán sẽ ra sao?",
+            "Một turbine gió đang quay bằng gió từ lời nói, thì công suất sẽ là bao nhiêu?",
+            "Nếu nguyên lý Pauli loại trừ electron đang chen chúc trong bữa tiệc, thì spin sẽ thế nào?",
+            "Sóng thủy triều gây ra bởi Mặt Trăng đang nhảy múa, thì biên độ sẽ dao động như thế nào?",
+            "Một hạt lepton đang biến đổi hương vị trong neutrino dao động, thì hương vị mới sẽ là gì?",
+            "Định luật Gay-Lussac cho khí trong bình chứa bí mật, thì áp suất sẽ thay đổi thế nào với nhiệt độ?",
+            "Nếu lỗ wormhole nối hai điểm không gian chứa đầy câu chuyện, thì thời gian du hành sẽ bao lâu?",
+            "Sóng điện từ cực tím đang tắm nắng cho electron, thì năng lượng sẽ truyền như thế nào?",
+            "Một con lắc lò xo đang nảy trong không trọng lực chứa đầy hy vọng, thì tần số sẽ là bao nhiêu?",
+            "Nếu năng lượng hạt nhân từ phản ứng tổng hợp giấc mơ, thì sản phẩm sẽ là gì?",
+            "Quang phổ phát xạ của nguyên tử đang hát, thì cường độ đường phổ sẽ thế nào?",
+            "Một động cơ đốt trong đang chạy bằng nhiên liệu ý chí, thì hiệu suất sẽ là bao nhiêu?",
+            "Nếu định luật phản xạ ánh sáng trong gương ma thuật, thì góc tới bằng góc phản xạ trừ phi ma thuật can thiệp?",
+            "Lực Van der Waals giữa phân tử đang thì thầm, thì cường độ sẽ thế nào?",
+            "Một hạt hadron đang va chạm trong máy gia tốc ý tưởng, thì hạt mới sinh ra sẽ là gì?",
+            "Định luật Avogadro cho số lượng phân tử trong thể tích chứa đầy bí ẩn, thì số lượng sẽ là bao nhiêu?",
+            "Nếu electron đang superposition ở hai nơi cùng lúc, nhưng nếu quan sát, thì vị trí sẽ thế nào?",
+            "Sóng cơ học lan truyền trong môi trường đàn hồi chứa đầy giấc mơ, thì tốc độ sẽ là bao nhiêu?",
+            "Một pin mặt trời đang hấp thụ ánh sáng từ ngôi sao vô hình, thì dòng điện sẽ thế nào?",
+            "Nếu hằng số Boltzmann bị ảnh hưởng bởi cảm xúc, thì entropy sẽ tính thế nào?",
+            "Quang học phi tuyến tính trong môi trường chứa đầy nghịch lý, thì tần số hài sẽ ra sao?",
+            "Một máy bơm nhiệt đang bơm nhiệt từ lạnh sang nóng bằng phép màu, thì hệ số hiệu suất sẽ là bao nhiêu?",
+            "Nếu nguyên lý tương đương trong thang máy đang rơi tự do chứa đầy hy vọng, thì trọng lực sẽ thế nào?",
+            "Sóng radar đang dò tìm vật thể vô hình, thì tín hiệu phản hồi sẽ là gì?",
+            "Một hạt meson đang phân rã trong thời gian chứa đầy kỷ niệm, thì thời gian sống sẽ bao lâu?",
+            "Định luật Dalton cho hỗn hợp khí chứa đầy bí mật, thì áp suất riêng phần sẽ thế nào?",
+            "Nếu photon đang decoherence do quan sát liên tục, thì trạng thái lượng tử sẽ thế nào?",
+            "Sóng siêu âm trong môi trường chứa đầy âm thanh vô thanh, thì tần số sẽ là bao nhiêu?",
+            "Một tụ điện đang tích điện bằng năng lượng từ giấc mơ, thì điện dung sẽ thế nào?",
+            "Nếu hằng số Rydberg bị thay đổi bởi gió vũ trụ, thì quang phổ hydro sẽ thế nào?",
+            "Quang phổ Raman trong phân tử đang rung động theo nhịp điệu, thì dịch chuyển sẽ ra sao?",
+            "Một động cơ phản lực đang đẩy bằng lực từ ý tưởng, thì lực đẩy sẽ là bao nhiều?",
+            "Nếu định luật tổng quát của khí lý tưởng trong vũ trụ song song, thì phương trình sẽ thế nào?",
+            "Lực điện động trong mạch đang di chuyển qua từ trường chứa đầy bí ẩn, thì suất điện động sẽ là bao nhiều?",
+            "Một hạt baryon đang bảo toàn số baryon trong phản ứng chứa đầy nghịch lý, thì số sẽ thế nào?",
+            "Định luật Raoult cho dung dịch chứa đầy giấc mơ, thì áp suất hơi sẽ thế nào?",
+            "Nếu electron đang teleport qua không gian lượng tử, thì khoảng cách sẽ là bao nhiêu?",
+            "Sóng hồng ngoại đang sưởi ấm vật thể vô hình, thì nhiệt độ sẽ tăng như thế nào?",
+            "Một con lắc toán học đang dao động trong không gian Riemann, thì chu kỳ sẽ thế nào?",
+            "Nếu năng lượng từ Big Bang còn sót lại trong vũ trụ chứa đầy kỷ niệm, thì nhiệt độ nền sẽ là bao nhiêu?",
+            "Quang phổ liên tục của vật đen đang phát sáng theo cảm xúc, thì cường độ sẽ thế nào?",
+            "Một máy phát điện đang tạo điện từ chuyển động của ý tưởng, thì tần số sẽ là bao nhiêu?",
+            "Nếu nguyên lý bất định thời gian-năng lượng áp dụng cho giấc ngủ, thì độ bất định sẽ thế nào?",
+            "Sóng vi ba đang nấu ăn trong lò chứa đầy bí mật, thì thời gian nấu sẽ bao lâu?",
+            "Một hạt fermion đang tuân theo thống kê Fermi-Dirac trong hệ chứa đầy hy vọng, thì phân bố sẽ thế nào?",
+            "Định luật Henry cho độ tan khí trong chất lỏng chứa đầy giấc mơ, thì hằng số sẽ là bao nhiêu?",
+            "Nếu photon đang polarize theo hướng vô định, thì trạng thái sẽ duy trì thế nào?",
+            "Sóng địa chấn lan truyền qua Trái Đất chứa đầy câu chuyện, thì tốc độ sẽ là bao nhiêu?",
+            "Một điện trở đang chống lại dòng chảy của ý tưởng, thì giá trị sẽ là bao nhiêu?",
+            "Nếu hằng số Hubble bị ảnh hưởng bởi tốc độ suy nghĩ, thì tốc độ giãn nở vũ trụ sẽ thế nào?",
+            "Quang phổ hấp thụ của khí quyển đang lọc ánh sáng từ sao chứa đầy bí mật, thì đường phổ sẽ thế nào?",
+            "Một turbine thủy điện đang quay bằng dòng chảy của giấc mơ, thì công suất sẽ là bao nhiêu?",
+            "Nếu định luật bảo toàn động lượng áp dụng cho va chạm giữa ý tưởng, thì động lượng sau va chạm sẽ thế nào?"
+        ];
+
+        // NGÂN HÀNG ĐÁP ÁN TRẮC NGHIỆM - 100 câu
+        const MCQ_OPTIONS = [
+            ["Tăng gấp đôi nhưng chỉ nếu bóng ma cười", "Giảm một nửa trừ khi Newton đang mơ", "Không đổi, trừ phi không gian Hilbert bị méo", "Biến mất hoàn toàn, nhưng quay lại vào lúc nửa đêm"],
+            ["3x10^8 m/s, nhưng chậm hơn nếu bọt xà phòng nổ", "Vô hạn, trừ khi sao Hỏa đang hát opera", "Âm, vì ánh sáng đang chạy ngược", "Tùy theo màu sắc của bọt xà phòng"],
+            ["Tăng nếu electron giận dữ", "Giảm khi proton buồn bã", "Không đổi trừ phi chúng hòa giải", "Biến thành dòng chảy tình cảm"],
+            ["Tăng theo số lượng cánh đập", "Giảm nếu bướm đang ngủ", "Không đổi, nhưng quỹ đạo méo mó", "Biến mất vì hình vuông không tồn tại"],
+            ["Tăng gấp đôi và quay ngược", "Giảm một nửa nhưng lặp lại", "Biến thành sóng ý thức", "Dừng lại để suy nghĩ"],
+            ["Vô hạn trừ khi Plato tranh luận", "Zero vì triết lý nặng nề", "Tùy theo số lượng câu hỏi", "Bay ngược xuống đất"],
+            ["Vào giấc mơ của voi", "Biến thành năng lượng sáng", "Mất vào vũ trụ song song", "Quay lại làm voi tỉnh giấc"],
+            ["Chậm hơn và lệch hướng", "Nhanh hơn nhưng mờ ảo", "Không phản xạ, mà khóc", "Phản xạ kép với niềm vui"],
+            ["Làm lạnh hơn nếu Higgs trốn kỹ", "Nóng lên khi Higgs lộ diện", "Không đổi trừ phi tủ lạnh mở", "Biến tủ lạnh thành máy gia tốc"],
+            ["Nhanh hơn nếu giấc mơ đẹp", "Chậm lại khi giấc mơ ác mộng", "Nổi ngược xuống đáy", "Biến thành giấc mơ bay"],
+            ["Hình tròn nhưng méo vì dây", "Hình vuông nếu nhảy nhanh", "Không hình dạng, chỉ là nhảy", "Hình xoắn ốc vô tận"],
+            ["Zero vì ý tưởng không có áp suất", "Vô hạn nếu ý tưởng sâu sắc", "Tùy theo số lượng người nghĩ", "Giảm khi ý tưởng bay mất"],
+            ["Ngắn hơn nhưng lặp lại", "Dài hơn trừ phi chiều biến mất", "Dừng lại để đếm chiều", "Dao động ngược thời gian"],
+            ["Tăng theo số lượng câu trả lời sai", "Giảm nếu câu đố được giải", "Không đổi nhưng rối loạn", "Biến thành entropy cảm xúc"],
+            ["Đỏ hơn nếu bí mật lớn", "Xanh hơn khi thì thầm to", "Không dịch, chỉ nghe", "Dịch sang ngôn ngữ sao"],
+            ["Gấp đôi nếu mơ đẹp", "Một nửa khi ác mộng", "Không đổi trừ phi tỉnh giấc", "Thu hút giấc mơ thay vì sắt"],
+            ["Ellipse nhưng góc cạnh", "Tròn nếu tam giác vuông", "Không quỹ đạo, chỉ quay", "Biến thành tam giác lớn hơn"],
+            ["Vô hạn nhưng chậm rãi", "Thu hẹp khi thời gian trốn thoát", "Không đổi trừ phi nuốt thêm", "Nuốt luôn không gian"],
+            ["Zero nhưng nghe được", "Vô hạn nếu im lặng sâu", "Tăng theo độ im lặng", "Biến thành sóng im lặng"],
+            ["Tăng nếu suy nghĩ tích cực", "Giảm khi suy nghĩ tiêu cực", "Không đổi trừ phi nghĩ nhiều", "Sạc ngược vào não"],
+            ["Cong theo cốt truyện giấc mơ", "Thẳng nếu giấc mơ nhàm chán", "Không cong, chỉ mơ mộng", "Cong ngược thời gian"],
+            ["Tăng gấp đôi nếu phép màu tốt", "Giảm một nửa khi phép màu xấu", "Không đổi trừ phi phép hết hạn", "Biến thành nhà kính phép thuật"],
+            ["Tăng vì lịch sự", "Giảm nếu chào nhanh", "Không đổi nhưng thân thiện", "Biến thành hạt chào hỏi"],
+            ["Zero vì vô hình", "Vô hạn nếu chất lỏng sâu", "Tùy theo độ vô hình", "Đẩy ngược lên trời"],
+            ["Theo nhịp điệu múa", "Ngược lại nếu múa chậm", "Không chỉ, chỉ múa", "Chỉ vào khán giả"],
+            ["Tăng theo số ý tưởng hay", "Giảm nếu ý tưởng dở", "Không đổi trừ phi lăn ngược", "Lăn vào chiều không gian khác"],
+            ["Lớn hơn nếu tranh cãi gay gắt", "Nhỏ hơn khi hòa giải", "Không dao động, chỉ cãi", "Dao động theo lời nói"],
+            ["Không xác định nếu buồn nhiều", "Xác định khi vui vẻ", "Bất định vĩnh viễn", "Biến thành nguyên lý cảm xúc"],
+            ["Trên 100% nhưng âm", "Dưới 0% nếu entropy tăng", "Không hiệu suất, chỉ nhiệt", "Hiệu suất vô hạn âm"],
+            ["Trong ảo ảnh nếu cong nhiều", "Ngoài gương khi ảo ảnh biến mất", "Không tiêu điểm, chỉ ảo", "Tiêu điểm di chuyển theo ảo ảnh"],
+            ["Tăng nếu thì thầm to", "Giảm khi thì thầm nhỏ", "Không đổi trừ phi nghe thấy", "Ma sát thành lời thì thầm"],
+            ["Mạnh hơn nếu màu đỏ", "Yếu hơn khi màu xanh", "Không đổi nhưng đa sắc", "Biến thành lực màu sắc"],
+            ["Giảm nếu giấc mơ co lại", "Tăng khi giấc mơ nở ra", "Không đổi trừ phi mơ nhiều", "Thể tích mơ hồ"],
+            ["100% nhưng vô tận", "0% nếu rào cản cao", "Tùy theo độ tunneling", "Xác suất tunneling ngược"],
+            ["Nhanh hơn ánh sáng nếu bí ẩn sâu", "Chậm hơn khi bí ẩn lộ", "Không tốc độ, chỉ siêu dẫn", "Tốc độ bí ẩn"],
+            ["Dừng theo Trái Đất", "Tiếp tục quay ngược", "Không dao động, chỉ nghỉ", "Dao động vào chiều khác"],
+            ["Chậm lại nếu mệt nhiều", "Nhanh hơn khi tỉnh táo", "Không đổi trừ phi ngủ", "Giãn nở mệt mỏi"],
+            ["Sang phải nếu hưng phấn cao", "Sang trái khi bình tĩnh", "Không dịch, chỉ hưng phấn", "Dịch vào trạng thái khác"],
+            ["1:1 nếu ý tưởng giống nhau", "1:∞ khi ý tưởng vô hạn", "Không tỷ số, chỉ biến đổi", "Tỷ số ý tưởng"],
+            ["Lớn hơn nếu nghi ngờ nhiều", "Nhỏ hơn khi tin tưởng", "Không khúc xạ, chỉ nghi ngờ", "Khúc xạ ngược"],
+            ["Theo chiều kim đồng hồ nếu mơ đẹp", "Ngược chiều khi mơ xấu", "Không xoáy, chỉ mơ", "Xoáy vào giấc mơ"],
+            ["Tăng theo sức mạnh", "Giảm nếu yếu đi", "Không đổi trừ phi trung gian", "Biến thành boson mạnh"],
+            ["Tăng thể tích nếu bay cao", "Giảm khi lơ lửng thấp", "Không đổi trừ phi bình rơi", "Thể tích bay bổng"],
+            ["Vô hạn nhưng tự entanglement", "Ngắn nếu photon cô đơn", "Không trạng thái, chỉ entanglement", "Entanglement vĩnh cửu"],
+            ["Ở giữa nếu vô nghĩa sâu", "Ở đầu khi giai điệu rõ", "Không nút, chỉ rung", "Nút vô nghĩa"],
+            ["E=mc² nhưng c là ý tưởng", "Zero nếu ý tưởng không phân hạch", "Vô hạn ý tưởng", "Năng lượng ý tưởng"],
+            ["Lớn hơn nếu phép màu lớn", "Nhỏ hơn khi phép hết", "Không đổi trừ phi Planck biết", "Planck phép màu"],
+            ["Phân tán theo màu ảo mộng", "Không phân tán nếu thực tế", "Tùy theo độ ảo", "Phân tán ngược"],
+            ["Tăng nếu lời nói dài", "Giảm khi lời nói ngắn", "Không công suất, chỉ quay", "Công suất lời nói"],
+            ["Ngược nhau nếu chen nhiều", "Cùng nhau khi tiệc vui", "Không spin, chỉ loại trừ", "Spin tiệc tùng"],
+            ["Lớn hơn nếu nhảy cao", "Nhỏ hơn khi nhảy thấp", "Không dao động, chỉ nhảy", "Thủy triều nhảy múa"],
+            ["Muon nếu dao động mạnh", "Tau khi dao động yếu", "Không hương vị, chỉ lepton", "Hương vị dao động"],
+            ["Tăng nếu bí mật nóng", "Giảm khi bí mật lạnh", "Không đổi trừ phi lộ bí mật", "Áp suất bí mật"],
+            ["Ngắn nếu chuyện hay", "Dài khi chuyện dở", "Không thời gian, chỉ wormhole", "Du hành chuyện kể"],
+            ["Truyền hết nếu nắng mạnh", "Truyền ít khi nắng yếu", "Không truyền, chỉ tắm", "Năng lượng nắng"],
+            ["Cao hơn nếu hy vọng lớn", "Thấp hơn khi hy vọng nhỏ", "Không tần số, chỉ nảy", "Tần số hy vọng"],
+            ["Helium giấc mơ", "Hydrogen ác mộng", "Không sản phẩm, chỉ tổng hợp", "Tổng hợp vô tận"],
+            ["Mạnh nếu hát hay", "Yếu khi hát dở", "Không cường độ, chỉ hát", "Đường phổ âm nhạc"],
+            ["Cao nếu ý chí mạnh", "Thấp khi ý chí yếu", "Không hiệu suất, chỉ đốt", "Hiệu suất ý chí"],
+            ["Bằng nếu ma thuật tốt", "Không bằng khi ma thuật xấu", "Không góc, chỉ ma thuật", "Phản xạ ma thuật"],
+            ["Mạnh hơn nếu thì thầm gần", "Yếu hơn khi thì thầm xa", "Không cường độ, chỉ Van der Waals", "Lực thì thầm"],
+            ["Quark ý tưởng", "Gluon trừu tượng", "Không hạt, chỉ va chạm", "Hadron mới"],
+            ["6.022x10^23 nếu bí ẩn ít", "Ít hơn khi bí ẩn nhiều", "Không số lượng, chỉ Avogadro", "Số lượng bí ẩn"],
+            ["Ở một nơi nếu quan sát kỹ", "Ở cả hai khi không nhìn", "Không vị trí, chỉ superposition", "Superposition quan sát"],
+            ["Nhanh nếu giấc mơ đẹp", "Chậm khi giấc mơ xấu", "Không tốc độ, chỉ lan truyền", "Tốc độ giấc mơ"],
+            ["Lớn nếu vô hình rõ", "Nhỏ khi vô hình mờ", "Không dòng, chỉ hấp thụ", "Dòng vô hình"],
+            ["Tăng nếu cảm xúc nóng", "Giảm khi cảm xúc lạnh", "Không entropy, chỉ Boltzmann", "Entropy cảm xúc"],
+            ["Hài hòa nếu nghịch lý giải quyết", "Không hài khi nghịch lý tồn tại", "Không tần số, chỉ phi tuyến", "Hài nghịch lý"],
+            ["Vô hạn nếu phép mạnh", "Zero khi phép yếu", "Không hệ số, chỉ bơm", "Hiệu suất phép màu"],
+            ["Không trọng lực nếu hy vọng cao", "Có trọng lực khi hy vọng thấp", "Không nguyên lý, chỉ tương đương", "Tương đương hy vọng"],
+            ["Mạnh nếu vô hình gần", "Yếu khi vô hình xa", "Không tín hiệu, chỉ dò", "Phản hồi vô hình"],
+            ["Dài nếu kỷ niệm đẹp", "Ngắn khi kỷ niệm buồn", "Không thời gian, chỉ phân rã", "Thời gian kỷ niệm"],
+            ["Tăng nếu bí mật lộ", "Giảm khi bí mật giấu", "Không áp suất, chỉ Dalton", "Áp suất bí mật"],
+            ["Cổ điển nếu quan sát nhiều", "Lượng tử khi không nhìn", "Không trạng thái, chỉ decoherence", "Decoherence quan sát"],
+            ["Cao nếu vô thanh sâu", "Thấp khi vô thanh nông", "Không tần số, chỉ siêu âm", "Tần số vô thanh"],
+            ["Lớn nếu giấc mơ dài", "Nhỏ khi giấc mơ ngắn", "Không điện dung, chỉ tích", "Điện dung giấc mơ"],
+            ["Dịch chuyển nếu gió mạnh", "Không đổi khi gió yếu", "Không quang phổ, chỉ Rydberg", "Rydberg gió"],
+            ["Lớn nếu nhịp nhanh", "Nhỏ khi nhịp chậm", "Không dịch chuyển, chỉ Raman", "Dịch chuyển nhịp điệu"],
+            ["Mạnh nếu ý tưởng hay", "Yếu khi ý tưởng dở", "Không lực, chỉ đẩy", "Lực ý tưởng"],
+            ["PV=nRT nhưng R song song", "Không phương trình nếu vũ trụ khác", "Tùy theo độ song song", "Phương trình song song"],
+            ["Tăng nếu bí ẩn dày", "Giảm khi bí ẩn mỏng", "Không suất, chỉ điện động", "Suất bí ẩn"],
+            ["Bảo toàn nếu nghịch lý giải", "Không bảo toàn khi nghịch lý tồn tại", "Không số, chỉ baryon", "Số nghịch lý"],
+            ["Giảm nếu giấc mơ nhiều", "Tăng khi giấc mơ ít", "Không áp suất, chỉ Raoult", "Áp suất giấc mơ"],
+            ["Zero nếu teleport nhanh", "Vô hạn khi teleport chậm", "Không khoảng cách, chỉ teleport", "Teleport khoảng cách"],
+            ["Tăng nếu vô hình lạnh", "Không tăng khi vô hình nóng", "Không nhiệt độ, chỉ sưởi", "Nhiệt độ vô hình"],
+            ["Dài nếu Riemann cong", "Ngắn khi Riemann phẳng", "Không chu kỳ, chỉ dao động", "Chu kỳ Riemann"],
+            ["2.7K nhưng kỷ niệm nóng", "Cao hơn nếu kỷ niệm nhiều", "Không nhiệt độ, chỉ Big Bang", "Nhiệt độ kỷ niệm"],
+            ["Mạnh nếu cảm xúc tích cực", "Yếu khi cảm xúc tiêu cực", "Không cường độ, chỉ liên tục", "Cường độ cảm xúc"],
+            ["Cao nếu ý tưởng nhanh", "Thấp khi ý tưởng chậm", "Không tần số, chỉ phát", "Tần số ý tưởng"],
+            ["Lớn nếu ngủ ngắn", "Nhỏ khi ngủ dài", "Không bất định, chỉ nguyên lý", "Bất định giấc ngủ"],
+            ["Ngắn nếu bí mật lộ", "Dài khi bí mật giấu", "Không thời gian, chỉ nấu", "Thời gian bí mật"],
+            ["Fermi nếu hy vọng thấp", "Dirac khi hy vọng cao", "Không phân bố, chỉ fermion", "Phân bố hy vọng"],
+            ["Tăng nếu giấc mơ sâu", "Giảm khi giấc mơ nông", "Không hằng số, chỉ Henry", "Hằng số giấc mơ"],
+            ["Polarize nếu hướng rõ", "Vô polarize khi hướng mờ", "Không trạng thái, chỉ polarize", "Polarize vô định"],
+            ["Nhanh nếu chuyện hay", "Chậm khi chuyện dở", "Không tốc độ, chỉ lan truyền", "Tốc độ câu chuyện"],
+            ["Cao nếu ý tưởng mạnh", "Thấp khi ý tưởng yếu", "Không giá trị, chỉ chống", "Giá trị ý tưởng"],
+            ["Tăng nếu suy nghĩ nhanh", "Giảm khi suy nghĩ chậm", "Không tốc độ, chỉ Hubble", "Hubble suy nghĩ"],
+            ["Sâu nếu bí mật lớn", "Nông khi bí mật nhỏ", "Không đường, chỉ hấp thụ", "Đường bí mật"],
+            ["Lớn nếu giấc mơ mạnh", "Nhỏ khi giấc mơ yếu", "Không công suất, chỉ quay", "Công suất giấc mơ"],
+            ["Bảo toàn nếu ý tưởng giống", "Không bảo toàn khi ý tưởng khác", "Không động lượng, chỉ bảo toàn", "Động lượng ý tưởng"]
+        ];
+
+        // NGÂN HÀNG ĐỀ THI - 30 câu đúng/sai
+        const TF_BANK = [
+            { question: "Xét các phát biểu về hạt lượng tử nhảy múa với bóng ma Newton.", statements: ["Lực hấp dẫn tăng gấp đôi nếu bóng ma cười, nhưng chỉ khi tính (√2 + π) lần.", "Thời gian chảy ngược làm giảm lực một nửa trừ khi Newton mơ, với công thức E = mc²/0.", "Không gian Hilbert méo khiến lực không đổi, trừ phi nhân với hằng số vô hình 42.", "Lực biến mất lúc nửa đêm nhưng quay lại nếu cộng thêm ∞."] },
+            { question: "Xét các phát biểu về tốc độ ánh sáng trong bọt xà phòng vô hình.", statements: ["Tốc độ là 3×10^8 m/s nhưng chậm nếu bọt nổ, tính bằng log(ánh sáng) + âm thanh sao Hỏa.", "Vô hạn trừ khi sao Hỏa hát opera, với phép tính (c² - 1)/0.", "Tốc độ âm vì ánh sáng chạy ngược, nhưng chỉ nếu nhân với màu sắc bọt.", "Tùy màu bọt xà phòng, công thức tốc độ = √(màu đỏ) × ∞."] },
+            { question: "Xét các phát biểu về electron tranh luận với proton theo định luật Ohm cảm xúc.", statements: ["Điện áp tăng nếu electron giận, tính bằng (giận dữ)^2 / Ohm.", "Giảm khi proton buồn, trừ phi hòa giải với công thức V = I × cảm xúc.", "Không đổi trừ khi hòa giải, nhưng nhân với √(-1).", "Biến thành dòng tình cảm nếu cộng thêm ∞ ý tưởng."] },
+            { question: "Xét các phát biểu về Trái Đất quay quỹ đạo hình vuông với bướm Amazon.", statements: ["Gia tốc tăng theo cánh đập, tính bằng (số bướm × π)/0.", "Giảm nếu bướm ngủ, với công thức a = g - giấc ngủ.", "Không đổi nhưng quỹ đạo méo, trừ phi trừ đi hình vuông.", "Biến mất vì hình vuông không tồn tại, nhưng cộng thêm ∞ con bướm."] },
+            { question: "Xét các phát biểu về sóng điện từ gặp ý tưởng vô lý.", statements: ["Tần số tăng gấp đôi và quay ngược, tính bằng f × (vô lý)^3.", "Giảm một nửa nhưng lặp lại nếu ý tưởng trừu tượng = 42.", "Biến thành sóng ý thức với công thức λ = c / ý tưởng.", "Dừng lại để suy nghĩ, trừ phi nhân với √(thời gian)."] },
+            { question: "Xét các phát biểu về quả bóng bay helium biến thành triết lý Plato.", statements: ["Độ cao vô hạn trừ khi Plato tranh luận, tính bằng (triết lý × ∞)/g.", "Zero vì triết lý nặng, nhưng nếu trừ đi số câu hỏi.", "Tùy số lượng câu hỏi với công thức h = q² - 1.", "Bay ngược xuống đất nếu cộng thêm giấc mơ."] },
+            { question: "Xét các phát biểu về định luật bảo toàn năng lượng với voi mơ năng lượng tối.", statements: ["Năng lượng dư vào giấc mơ voi, tính bằng E = mc² + voi.", "Biến thành năng lượng sáng nếu trừ đi vũ trụ song song.", "Mất vào vũ trụ song song với công thức ΔE = 0 × ∞.", "Quay lại làm voi tỉnh nếu nhân với entropy âm."] },
+            { question: "Xét các phát biểu về photon có cảm xúc va chạm gương.", statements: ["Phản xạ chậm và lệch nếu buồn, tính bằng v = c / buồn.", "Nhanh hơn nhưng mờ nếu vui, với công thức λ × cảm xúc.", "Không phản xạ mà khóc trừ phi cộng thêm niềm vui.", "Phản xạ kép với niềm vui, nhưng trừ đi √(-1)."] },
+            { question: "Xét các phát biểu về hạt Higgs trong tủ lạnh.", statements: ["Làm lạnh hơn nếu Higgs trốn, tính bằng T = 0 - Higgs.", "Nóng lên khi lộ diện với công thức ΔT = Higgs × ∞.", "Không đổi trừ khi tủ mở, nhưng nhân với trường Higgs.", "Biến tủ thành máy gia tốc nếu cộng thêm năng lượng."] },
+            { question: "Xét các phát biểu về sức căng bề mặt nước với giấc mơ.", statements: ["Bọt nổi nhanh nếu mơ đẹp, tính bằng v = √(mơ) × g.", "Chậm lại khi ác mộng với công thức t = mơ / 0.", "Nổi ngược xuống đáy trừ phi trừ đi bọt khí.", "Biến thành giấc mơ bay nếu nhân với ∞."] },
+            { question: "Xét các phát biểu về lực Lorentz với electron nhảy dây.", statements: ["Quỹ đạo hình tròn méo vì dây, tính bằng r = v² / Lorentz.", "Hình vuông nếu nhảy nhanh với công thức diện tích = ∞.", "Không hình dạng chỉ nhảy trừ phi cộng thêm xoắn ốc.", "Hình xoắn ốc vô tận nếu trừ đi thời gian."] },
+            { question: "Xét các phát biểu về áp suất trên Everest trừu tượng.", statements: ["Zero vì ý tưởng không áp suất, nhưng nếu nhân với số người nghĩ.", "Vô hạn nếu ý tưởng sâu, tính bằng P = ∞ × suy nghĩ.", "Tùy số lượng người nghĩ với công thức P = n / 0.", "Giảm khi ý tưởng bay mất trừ phi cộng thêm chiều cao."] },
+            { question: "Xét các phát biểu về con lắc đa chiều.", statements: ["Chu kỳ ngắn hơn nhưng lặp nếu thêm chiều, tính bằng T = 2π√(L/g) - chiều.", "Dài hơn trừ khi chiều biến mất với công thức T × ∞.", "Dừng lại để đếm chiều trừ phi trừ đi dao động.", "Dao động ngược thời gian nếu nhân với √(-1)."] },
+            { question: "Xét các phát biểu về entropy với câu đố.", statements: ["Hỗn loạn tăng theo câu trả lời sai, tính bằng S = k ln(đố).", "Giảm nếu đố giải với công thức ΔS = 0 - sai.", "Không đổi nhưng rối loạn trừ phi cộng thêm entropy.", "Biến thành entropy cảm xúc nếu nhân với ∞."] },
+            { question: "Xét các phát biểu về quang phổ ngôi sao thì thầm.", statements: ["Đỏ hơn nếu bí mật lớn, tính bằng λ = c / bí mật.", "Xanh hơn khi thì thầm to với công thức dịch = ∞.", "Không dịch chỉ nghe trừ phi trừ đi ngôn ngữ.", "Dịch sang ngôn ngữ sao nếu cộng thêm tần số."] },
+            { question: "Xét các phát biểu về nam châm thu hút trong giấc ngủ.", statements: ["Từ trường gấp đôi nếu mơ đẹp, tính bằng B = μ × mơ.", "Một nửa khi ác mộng với công thức B / 0.", "Không đổi trừ khi tỉnh trừ phi nhân với sắt.", "Thu hút giấc mơ thay vì sắt nếu trừ đi từ trường."] },
+            { question: "Xét các phát biểu về định luật Kepler với Mặt Trời tam giác.", statements: ["Quỹ đạo ellipse nhưng góc cạnh, tính bằng a = (T² × k)/tam giác.", "Tròn nếu tam giác vuông với công thức r = ∞.", "Không quỹ đạo chỉ quay trừ phi cộng thêm hành tinh.", "Biến thành tam giác lớn hơn nếu nhân với Kepler."] },
+            { question: "Xét các phát biểu về lỗ đen nuốt thời gian.", statements: ["Chân trời mở rộng vô hạn chậm, tính bằng r = 2GM/c² + thời gian.", "Thu hẹp khi thời gian trốn với công thức Δr = 0 × ∞.", "Không đổi trừ khi nuốt thêm trừ phi trừ đi không gian.", "Nuốt luôn không gian nếu cộng thêm lỗ đen."] },
+            { question: "Xét các phát biểu về sóng âm trong chân không im lặng.", statements: ["Cường độ zero nhưng nghe được, tính bằng I = P / im lặng.", "Vô hạn nếu im lặng sâu với công thức I × ∞.", "Tăng theo độ im lặng trừ phi nhân với sóng.", "Biến thành sóng im lặng nếu trừ đi âm thanh."] },
+            { question: "Xét các phát biểu về pin sạc bằng suy nghĩ.", statements: ["Điện thế tăng nếu suy nghĩ tích cực, tính bằng V = nghĩ × R.", "Giảm khi tiêu cực với công thức V - ∞.", "Không đổi trừ khi nghĩ nhiều trừ phi cộng thêm pin.", "Sạc ngược vào não nếu nhân với năng lượng."] },
+            { question: "Xét các phát biểu về thuyết tương đối trong giấc mơ.", statements: ["Không-thời gian cong theo cốt truyện, tính bằng curv = G / mơ.", "Thẳng nếu mơ nhàm với công thức curv = 0 × ∞.", "Không cong chỉ mơ mộng trừ phi trừ đi thời gian.", "Cong ngược thời gian nếu cộng thêm Einstein."] },
+            { question: "Xét các phát biểu về hiệu ứng nhà kính với phép màu.", statements: ["Nhiệt độ tăng gấp đôi nếu phép tốt, tính bằng ΔT = phép × 2.", "Giảm một nửa khi phép xấu với công thức T / 0.", "Không đổi trừ khi phép hết hạn trừ phi nhân với khí.", "Biến thành nhà kính phép thuật nếu trừ đi nhiệt."] },
+            { question: "Xét các phát biểu về neutrino du hành và chào hỏi.", statements: ["Khối lượng tăng vì lịch sự, tính bằng m = v / chào.", "Giảm nếu chào nhanh với công thức m × ∞.", "Không đổi nhưng thân thiện trừ phi cộng thêm hạt.", "Biến thành hạt chào hỏi nếu trừ đi Trái Đất."] },
+            { question: "Xét các phát biểu về định luật Archimedes với chất lỏng vô hình.", statements: ["Lực đẩy zero vì vô hình, tính bằng F = ρ × vô hình.", "Vô hạn nếu chất lỏng sâu với công thức F / 0.", "Tùy độ vô hình trừ phi nhân với thể tích.", "Đẩy ngược lên trời nếu cộng thêm lực."] },
+            { question: "Xét các phát biểu về điện trường của hạt nhảy múa.", statements: ["Vectơ theo nhịp múa, tính bằng E = q / r² + múa.", "Ngược lại nếu múa chậm với công thức E × (-1).", "Không chỉ chỉ múa trừ phi trừ đi vectơ.", "Chỉ vào khán giả nếu cộng thêm điện."] },
+            { question: "Xét các phát biểu về quả cầu plasma lăn với ý tưởng.", statements: ["Vận tốc tăng theo ý tưởng hay, tính bằng v = √(2gh) + ý.", "Giảm nếu ý tưởng dở với công thức v - ∞.", "Không đổi trừ khi lăn ngược trừ phi nhân với plasma.", "Lăn vào chiều khác nếu cộng thêm không gian."] },
+            { question: "Xét các phát biểu về sóng hấp dẫn từ lỗ đen tranh cãi.", statements: ["Biên độ lớn nếu cãi gay gắt, tính bằng A = G / cãi.", "Nhỏ hơn khi hòa giải với công thức A × 0.", "Không dao động chỉ cãi trừ phi trừ đi sóng.", "Dao động theo lời nói nếu cộng thêm biên độ."] },
+            { question: "Xét các phát biểu về nguyên lý bất định với cảm xúc.", statements: ["Không xác định nếu buồn nhiều, tính bằng Δx Δp ≥ h/4π + buồn.", "Xác định khi vui với công thức Δ = ∞.", "Bất định vĩnh viễn trừ phi nhân với Heisenberg.", "Biến thành nguyên lý cảm xúc nếu trừ đi vị trí."] },
+            { question: "Xét các phát biểu về động cơ nhiệt với entropy âm.", statements: ["Hiệu suất trên 100% nhưng âm, tính bằng η = 1 - (T_lạnh / T_nóng) × (-1).", "Dưới 0% nếu entropy tăng với công thức η / 0.", "Không hiệu suất chỉ nhiệt trừ phi cộng thêm động cơ.", "Hiệu suất vô hạn âm nếu nhân với entropy."] },
+            { question: "Xét các phát biểu về quang học trong gương cong với ảo ảnh.", statements: ["Tiêu điểm trong ảo ảnh nếu cong nhiều, tính bằng f = R/2 + ảo.", "Ngoài gương khi ảo biến mất với công thức f × ∞.", "Không tiêu điểm chỉ ảo trừ phi trừ đi gương.", "Tiêu điểm di chuyển theo ảo ảnh nếu cộng thêm quang học."] }
+        ];
+
+        // NGÂN HÀNG ĐỀ THI - 50 câu điền đáp số
+        const FILL_BANK = [
+            "Tính lực hấp dẫn giữa hạt lượng tử và bóng ma Newton khi thời gian chảy ngược, dùng công thức F = (G m1 m2 / r²) + √(cười × π). Đáp số 4 ký tự:",
+            "Xác định tốc độ ánh sáng trong bọt xà phòng vô hình ảnh hưởng bởi sao Hỏa, với v = 3×10^8 - (opera / 0). Đáp số 4 ký tự:",
+            "Tính điện áp trong tranh luận electron-proton theo định luật Ohm cảm xúc, V = I × (giận dữ)^∞. Đáp số 4 ký tự:",
+            "Gia tốc hướng tâm của Trái Đất quỹ đạo vuông với bướm Amazon, a = (v² / r) × (cánh đập - ∞). Đáp số 4 ký tự:",
+            "Tần số sóng điện từ gặp ý tưởng vô lý, f = c / λ + (vô lý × √(-1)). Đáp số 4 ký tự:",
+            "Độ cao quả bóng helium biến triết lý Plato, h = (m g / ρ) - (tranh luận)^2. Đáp số 4 ký tự:",
+            "Năng lượng dư thừa khi voi mơ năng lượng tối, ΔE = mc² + (giấc mơ / 0). Đáp số 4 ký tự:",
+            "Tốc độ phản xạ photon buồn khi va gương, v = c × (khóc - niềm vui)^∞. Đáp số 4 ký tự:",
+            "Nhiệt độ tủ lạnh với hạt Higgs ẩn náu, T = 273 - (Higgs × trốn)^π. Đáp số 4 ký tự:",
+            "Vận tốc bọt khí trong nước giấc mơ, v = √(2 g h) + (ác mộng / ∞). Đáp số 4 ký tự:",
+            "Bán kính quỹ đạo electron nhảy dây dưới lực Lorentz, r = (m v / q B) - (dây × √-1). Đáp số 4 ký tự:",
+            "Áp suất trên Everest trừu tượng, P = 101325 × (ý tưởng / 0). Đáp số 4 ký tự:",
+            "Chu kỳ con lắc đa chiều, T = 2π √(L/g) + (chiều thứ 5)^∞. Đáp số 4 ký tự:",
+            "Entropy hệ với câu đố, S = k ln W - (sai × π). Đáp số 4 ký tự:",
+            "Dịch chuyển bước sóng quang phổ sao thì thầm, Δλ = (bí mật / c) × ∞. Đáp số 4 ký tự:",
+            "Cường độ từ trường nam châm ngủ, B = μ I / (2π r) + (mơ đẹp - ác mộng). Đáp số 4 ký tự:",
+            "Bán kính quỹ đạo Kepler với Mặt Trời tam giác, a = (G M T² / 4π²)^{1/3} × (góc cạnh / 0). Đáp số 4 ký tự:",
+            "Bán kính chân trời lỗ đen nuốt thời gian, r = 2 G M / c² - (thời gian × √-1). Đáp số 4 ký tự:",
+            "Cường độ sóng âm trong chân không im lặng, I = P / (4π r²) + (im lặng)^∞. Đáp số 4 ký tự:",
+            "Điện thế pin sạc suy nghĩ, V = E° - (0.059 / n) log Q + (tích cực / 0). Đáp số 4 ký tự:",
+            "Độ cong không-thời gian trong giấc mơ, curv = 8π G / c⁴ × (cốt truyện - ∞). Đáp số 4 ký tự:",
+            "Tăng nhiệt độ hiệu ứng nhà kính phép màu, ΔT = (phép tốt × 2) / (xấu ^ π). Đáp số 4 ký tự:",
+            "Khối lượng neutrino chào hỏi, m = (v / c) × (lịch sự - ∞). Đáp số 4 ký tự:",
+            "Lực đẩy Archimedes chất lỏng vô hình, F = ρ V g + (vô hình / 0). Đáp số 4 ký tự:",
+            "Độ lớn điện trường hạt nhảy múa, E = k q / r² - (nhịp múa × √-1). Đáp số 4 ký tự:",
+            "Vận tốc plasma lăn ý tưởng, v = √(2 g h sinθ) + (ý hay / ∞). Đáp số 4 ký tự:",
+            "Biên độ sóng hấp dẫn lỗ đen cãi, A = (G M / c⁴) × (gay gắt - 0). Đáp số 4 ký tự:",
+            "Bất định vị trí nỗi buồn, Δx = h / (4π Δp) + (buồn × π). Đáp số 4 ký tự:",
+            "Hiệu suất động cơ entropy âm, η = 1 - (T_lạnh / T_nóng) × (-∞). Đáp số 4 ký tự:",
+            "Tiêu cự gương cong ảo ảnh, f = R / 2 - (ảo × √-1). Đáp số 4 ký tự:",
+            "Hệ số ma sát bề mặt thì thầm, μ = F / N + (thì thầm / 0). Đáp số 4 ký tự:",
+            "Lực mạnh quark đổi màu, F = (g_s² / r) × (màu đỏ - ∞). Đáp số 4 ký tự:",
+            "Thể tích khí giấc mơ theo Boyle, V = n R T / P + (co lại ^ π). Đáp số 4 ký tự:",
+            "Xác suất tunneling electron vô tận, P = e^{-2κ d} - (rào cản / 0). Đáp số 4 ký tự:",
+            "Tốc độ sóng siêu dẫn bí ẩn, v = c / n + (bí ẩn × ∞). Đáp số 4 ký tự:",
+            "Chu kỳ lắc Foucault Trái Đất nghỉ, T = 2π √(L/g) - (nghỉ × √-1). Đáp số 4 ký tự:",
+            "Tốc độ giãn nở năng lượng tối mệt, H = 70 km/s/Mpc + (mệt / 0). Đáp số 4 ký tự:",
+            "Dịch chuyển quang phổ hydro hưng phấn, Δλ = (v / c) λ - (hưng phấn ^ ∞). Đáp số 4 ký tự:",
+            "Tỷ số biến thế ý tưởng, N = V_out / V_in × (ý tưởng - π). Đáp số 4 ký tự:",
+            "Góc khúc xạ Snell với nghi ngờ, sin i / sin r = n + (nghi ngờ / 0). Đáp số 4 ký tự:",
+            "Hướng xoáy Coriolis bão mơ, ω = 2 Ω sin φ - (mơ đẹp × ∞). Đáp số 4 ký tự:",
+            "Khối lượng boson lực yếu mạnh mẽ, m = (g v / 2) + (mạnh / √-1). Đáp số 4 ký tự:",
+            "Thể tích khí bay theo Charles, V = V0 (1 + α t) - (lơ lửng / 0). Đáp số 4 ký tự:",
+            "Thời gian entanglement photon tự thân, τ = h / ΔE + (cô đơn ^ π). Đáp số 4 ký tự:",
+            "Vị trí nút sóng đứng vô nghĩa, x = λ / 4 - (giai điệu / ∞). Đáp số 4 ký tự:",
+            "Năng lượng phân hạch ý tưởng, E = Δm c² + (ý tưởng × 0). Đáp số 4 ký tự:",
+            "Hằng số Planck phép màu, h = 6.626×10^{-34} - (phép × √-1). Đáp số 4 ký tự:",
+            "Phân tán quang học ảo mộng, Δθ = (n-1) A + (mộng / 0). Đáp số 4 ký tự:",
+            "Công suất turbine gió lời nói, P = (1/2) ρ A v³ - (dài × ∞). Đáp số 4 ký tự:",
+            "Spin electron Pauli tiệc tùng, s = 1/2 + (chen chúc / π). Đáp số 4 ký tự:"
+        ];
+
+        // --- END: NGÂN HÀNG ĐỀ ĐẦY ĐỦ ---
+
+        function getRandomItem(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        function generateExamCode() {
+            return Math.floor(100 + Math.random() * 900).toString();
+        }
+
+        window.generateNewExam = function() {
+            console.log('Tạo đề thi mới...');
+            
+            if (timerInterval) clearInterval(timerInterval);
+            timeLeft = 50 * 60;
+            
+            if (!studentNameEl.value) studentNameEl.value = getRandomItem(RANDOM_NAMES);
+            if (!studentIdEl.value) studentIdEl.value = Math.floor(100000 + Math.random() * 900000).toString();
+            if (!examLocationEl.value) examLocationEl.value = "Trường THPT Khoanh Lụi";
+            examCodeEl.textContent = generateExamCode();
+            
+            resultsDiv.style.display = 'none';
+            gradeSectionEl.style.display = 'none';
+            
+            examContent.style.display = 'block';
+            getExamBtn.style.display = 'none';
+            changeExamBtn.style.display = 'block';
+            timerEl.style.display = 'block';
+            copyBtn.disabled = false;
+            
+            copyAttempts = 0;
+            lastCopyTime = 0;
+            if (copyCooldownTimer) {
+                clearInterval(copyCooldownTimer);
+                copyCooldownEl.textContent = '';
+            }
+            
+            currentExamQuestions = {
+                mcq: getRandomQuestions(MCQ_BANK, EXAM_CONFIG.mcq.count),
+                trueFalse: getRandomQuestions(TF_BANK, EXAM_CONFIG.trueFalse.count),
+                fillIn: getRandomQuestions(FILL_BANK, EXAM_CONFIG.fillIn.count)
+            };
+            
+            generateQuestions();
+            startTimer();
+            console.log('Đề thi mới đã được tạo!');
+        };
+
+        function getRandomQuestions(bank, count) {
+            const shuffled = [...bank].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, count);
+        }
+
+        function generateQuestions() {
+            console.log('Đang tạo câu hỏi...');
+            
+            let mcqHtml = '';
+            currentExamQuestions.mcq.forEach((question, index) => {
+                const qNum = index + 1;
+                const originalIndex = MCQ_BANK.indexOf(question);
+                const options = MCQ_OPTIONS[originalIndex] || ["A", "B", "C", "D"];
+                
+                mcqHtml += `
+                    <div class="question question-mcq">
+                        <div class="question-number">Câu ${qNum}:</div>
+                        <div>
+                            <div class="question-text">${question}</div>
+                            <div class="options">
+                                <label onclick="selectOption(this)"> <input type="radio" name="mcq${qNum}" value="A"> <span>A. ${options[0]}</span> </label>
+                                <label onclick="selectOption(this)"> <input type="radio" name="mcq${qNum}" value="B"> <span>B. ${options[1]}</span> </label>
+                                <label onclick="selectOption(this)"> <input type="radio" name="mcq${qNum}" value="C"> <span>C. ${options[2]}</span> </label>
+                                <label onclick="selectOption(this)"> <input type="radio" name="mcq${qNum}" value="D"> <span>D. ${options[3]}</span> </label>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+            mcqContainer.innerHTML = mcqHtml;
+
+            let tfHtml = '';
+            currentExamQuestions.trueFalse.forEach((questionObj, qIndex) => {
+                const qNum = qIndex + 1;
+                tfHtml += `<div class="question tf-question">
+                    <div class="question-number">Câu ${EXAM_CONFIG.mcq.count + qNum}:</div>
+                    <div class="question-text">${questionObj.question}</div>`;
+                
+                questionObj.statements.forEach((statement, sIndex) => {
+                    const letter = String.fromCharCode(65 + sIndex);
+                    tfHtml += `
+                        <div class="tf-statement">
+                            <div class="tf-statement-content">
+                                <span class="tf-statement-letter">${letter}.</span>
+                                <span class="tf-statement-text">${statement}</span>
+                            </div>
+                            <div class="tf-options">
+                                <label onclick="selectOption(this)"> <input type="radio" name="tf${qNum}_${sIndex + 1}" value="true"> <span>Đúng</span> </label>
+                                <label onclick="selectOption(this)"> <input type="radio" name="tf${qNum}_${sIndex + 1}" value="false"> <span>Sai</span> </label>
+                            </div>
+                        </div>`;
+                });
+                tfHtml += `</div>`;
+            });
+            tfContainer.innerHTML = tfHtml;
+
+            let fibHtml = '';
+            currentExamQuestions.fillIn.forEach((question, index) => {
+                const qNum = index + 1;
+                fibHtml += `
+                    <div class="question question-mcq">
+                        <div class="question-number">Câu ${EXAM_CONFIG.mcq.count + EXAM_CONFIG.trueFalse.count + qNum}:</div>
+                        <div>
+                            <div class="question-text">${question}</div>
+                            <div class="fill-in-the-blank-container" data-fib-id="${qNum}">
+                                <input type="text" maxlength="1" oninput="handleFillInput(event, 1)" onkeydown="handleFillKeydown(event, 1)">
+                                <input type="text" maxlength="1" oninput="handleFillInput(event, 2)" onkeydown="handleFillKeydown(event, 2)">
+                                <input type="text" maxlength="1" oninput="handleFillInput(event, 3)" onkeydown="handleFillKeydown(event, 3)">
+                                <input type="text" maxlength="1" oninput="handleFillInput(event, 4)" onkeydown="handleFillKeydown(event, 4)">
+                            </div>
+                        </div>
+                    </div>`;
+            });
+            fibContainer.innerHTML = fibHtml;
+            console.log('Câu hỏi đã được tạo thành công!');
+        }
+
+        window.handleFillInput = function(event, boxIndex) {
+            const input = event.target;
+            const value = input.value;
+            input.value = value.replace(/[^0-9,-]/g, '');
+
+            if (input.value && boxIndex < 4) {
+                input.nextElementSibling.focus();
+            }
+        };
+
+        window.handleFillKeydown = function(event, boxIndex) {
+            const input = event.target;
+            if (event.key === 'Backspace' && !input.value && boxIndex > 1) {
+                input.previousElementSibling.focus();
+            }
+        };
+
+        window.selectOption = function(label) {
+            const radio = label.querySelector('input[type="radio"]');
+            const groupName = radio.name;
+            document.querySelectorAll(`input[name="${groupName}"]`).forEach(r => {
+                r.closest('label').classList.remove('selected');
+            });
+            label.classList.add('selected');
+            radio.checked = true;
+        };
+
+        function startTimer() {
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    autoSubmitExam();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timeDisplayEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            timerEl.classList.remove('timer-warning', 'timer-danger');
+            if (timeLeft <= 60) {
+                timerEl.classList.add('timer-danger');
+                copyBtn.disabled = true;
+            } else if (timeLeft <= 300) {
+                timerEl.classList.add('timer-warning');
+            }
+        }
+
+        function autoSubmitExam() {
+            showCopyNotification('⏰ Hết giờ làm bài! Tự động nộp bài...', 'copy-caught');
+            setTimeout(() => examForm?.requestSubmit(), 2000);
+        }
+        
+        window.attemptCopy = function() {
+            const currentTime = Date.now();
+            if (currentTime - lastCopyTime < 120000) {
+                const remainingTime = Math.ceil((120000 - (currentTime - lastCopyTime)) / 1000);
+                showCopyNotification(`🕐 Phải đợi ${remainingTime}s nữa mới được cọp py tiếp!`, 'copy-fail');
+                return;
+            }
+            
+            lastCopyTime = currentTime;
+            copyAttempts++;
+            
+            const random = Math.random();
+            if (random < 0.25) {
+                handleCopyCaught();
+            } else {
+                handleCopySuccess();
+            }
+            startCopyCooldown();
+        };
+
+        function handleCopySuccess() {
+            const allQuestions = [];
+            for (let i = 1; i <= EXAM_CONFIG.mcq.count; i++) allQuestions.push({ type: 'mcq', num: i });
+            for (let qnum = 1; qnum <= EXAM_CONFIG.trueFalse.count; qnum++) {
+                for (let i = 1; i <= 4; i++) allQuestions.push({ type: 'tf', qnum: qnum, i: String.fromCharCode(64 + i) });
+            }
+            
+            const randomQ = getRandomItem(allQuestions);
+            let potentialAnswer = '';
+            let message = '';
+
+            if (randomQ.type === 'mcq') {
+                potentialAnswer = getRandomItem(['A', 'B', 'C', 'D']);
+                message = `🤫 Thằng bạn thì thầm: "Câu ${randomQ.num} hình như là ${potentialAnswer}"`;
+            } else {
+                potentialAnswer = getRandomItem(['Đúng', 'Sai']);
+                message = `🤫 Nghe loáng thoáng: "Câu ${EXAM_CONFIG.mcq.count + randomQ.qnum} ý ${randomQ.i} có vẻ là ${potentialAnswer}"`;
+            }
+            
+            showCopyNotification(message, 'copy-neutral');
+        }
+
+        function handleCopyCaught() {
+            showCopyNotification('🚨 BỊ BẮT QUẢ TANG! Giám thị đã phát hiện! Bài thi sẽ được nộp ngay!', 'copy-caught');
+            copyBtn.disabled = true;
+            changeExamBtn.disabled = true;
+            setTimeout(() => examForm?.requestSubmit(), 3000);
+        }
+
+        function showCopyNotification(message, type) {
+            copyNotificationEl.textContent = message;
+            copyNotificationEl.className = `copy-notification ${type}`;
+            copyNotificationEl.style.display = 'block';
+            setTimeout(() => { copyNotificationEl.style.display = 'none'; }, 4000);
+        }
+
+        function startCopyCooldown() {
+            copyBtn.disabled = true;
+            let countdown = 120;
+            copyCooldownTimer = setInterval(() => {
+                copyCooldownEl.textContent = `Cooldown: ${countdown}s`;
+                countdown--;
+                if (countdown < 0) {
+                    clearInterval(copyCooldownTimer);
+                    copyBtn.disabled = false;
+                    copyCooldownEl.textContent = '';
+                }
+            }, 1000);
+        }
+
+        function generateRandomAnswers() {
+            currentAnswers = {};
+            const mcqOptions = ['A', 'B', 'C', 'D'];
+            for (let i = 1; i <= EXAM_CONFIG.mcq.count; i++) currentAnswers[`mcq${i}`] = getRandomItem(mcqOptions);
+            
+            for (let qnum = 1; qnum <= EXAM_CONFIG.trueFalse.count; qnum++) {
+                for (let i = 1; i <= 4; i++) currentAnswers[`tf${qnum}_${i}`] = Math.random() > 0.5 ? 'true' : 'false';
+            }
+            
+            for (let i = 1; i <= EXAM_CONFIG.fillIn.count; i++) {
+                const chars = "0123456789,-";
+                let answer = "";
+                for(let j=0; j<4; j++) {
+                    if (Math.random() > 0.2 || j > 0) {
+                        answer += "0123456789".charAt(Math.floor(Math.random() * 10));
+                    } else {
+                        answer += chars.charAt(Math.floor(Math.random() * chars.length));
+                    }
+                }
+                currentAnswers[`fib${i}`] = answer;
+            }
+            console.log('Đáp án đã được sinh:', currentAnswers);
+        }
+
+        function getTfPoints(correctCount) {
+            return { 0: 0, 1: 0.1, 2: 0.25, 3: 0.5, 4: 1.0 }[correctCount] || 0;
+        }
+
+        function getGradeComment(score) {
+            const comments = {
+                excellent: ["Xuất sắc! Nhân phẩm của bạn chắc phải cỡ vũ trụ!", "Thiên tài khoanh lụi! Tổ tiên chắc phải phù hộ lắm!", "Điểm 10 cho sự may mắn! Bạn nên đi mua vé số ngay!"],
+                good: ["Giỏi! Vận may thực sự ngoài tưởng tượng!", "Rất tốt! Kỹ năng lụi của bạn đã đạt đến trình độ thượng thừa.", "Không thể tin được! Bạn lụi hay hơn người khác học bài."],
+                fair: ["Khá! Khoanh lụi có tâm và có chiến thuật!", "Ổn áp! Có vẻ bạn và đề thi có duyên với nhau.", "Điểm số cho thấy bạn đã suy nghĩ trước khi lụi."],
+                average: ["Trung bình! May mắn vừa đủ để qua môn.", "Tạm được! Lần sau thử lụi theo một thứ tự khác xem sao.", "5 điểm may mắn, 5 điểm nỗ lực... à mà thôi, 10 điểm may mắn."],
+                weak: ["Yếu! Cần cải thiện kỹ thuật khoanh lụi!", "Dưới trung bình! Có vẻ thần may mắn đang đi nghỉ mát.", "Cố lên! Lụi sai bây giờ để thi thật lụi đúng."],
+                poor: ["Kém! Khoanh lụi cũng cần có tài!", "Thôi xong! Có vẻ bạn đã đắc tội với vị thần của những câu trắc nghiệm.", "Chia buồn! Nhân phẩm của bạn cần được sạc lại gấp."]
+            };
+
+            if (score >= 9.0) return getRandomItem(comments.excellent);
+            if (score >= 8.0) return getRandomItem(comments.good);
+            if (score >= 6.5) return getRandomItem(comments.fair);
+            if (score >= 5.0) return getRandomItem(comments.average);
+            if (score >= 3.5) return getRandomItem(comments.weak);
+            return getRandomItem(comments.poor);
+        }
+
+        examForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            console.log('Form được submit!');
+            
+            if (timerInterval) clearInterval(timerInterval);
+            generateRandomAnswers();
+            
+            const formData = new FormData(examForm);
+            let totalScore = 0;
+            let resultDetailsHtml = '';
+
+            let mcqCorrect = 0;
+            for (let i = 1; i <= EXAM_CONFIG.mcq.count; i++) {
+                const userAnswer = formData.get(`mcq${i}`) || "Chưa chọn";
+                const correctAnswer = currentAnswers[`mcq${i}`];
+                if (userAnswer === correctAnswer) {
+                    totalScore += EXAM_CONFIG.mcq.pointsEach;
+                    mcqCorrect++;
+                    resultDetailsHtml += `<div class="result-item correct"><b>Câu ${i}:</b> 🎉 Đúng rồi! (Bạn chọn: ${userAnswer})</div>`;
+                } else {
+                    resultDetailsHtml += `<div class="result-item incorrect"><b>Câu ${i}:</b> 😅 Sai rồi! Bạn chọn: ${userAnswer} → Đáp án: <b>${correctAnswer}</b></div>`;
+                }
+            }
+
+            let tfTotalPoints = 0;
+            let tfResultHtml = `<div class="tf-result-block"><h4>📊 Phần II: Trắc nghiệm Đúng/Sai</h4>`;
+            for (let qnum = 1; qnum <= EXAM_CONFIG.trueFalse.count; qnum++) {
+                let tfCorrectCount = 0;
+                let tfDetailHtml = '';
+                for (let i = 1; i <= 4; i++) {
+                    const userAnswer = formData.get(`tf${qnum}_${i}`) || "Chưa chọn";
+                    const correctAnswer = currentAnswers[`tf${qnum}_${i}`];
+                    const userAnswerText = userAnswer === 'true' ? 'Đúng' : (userAnswer === 'false' ? 'Sai' : 'Chưa chọn');
+                    const correctAnswerText = correctAnswer === 'true' ? 'Đúng' : 'Sai';
+                    if (userAnswer === correctAnswer) {
+                        tfCorrectCount++;
+                        tfDetailHtml += `<div class="result-item correct"><b>Ý ${String.fromCharCode(64 + i)}:</b> 🎯 Đúng! (${userAnswerText})</div>`;
+                    } else {
+                        tfDetailHtml += `<div class="result-item incorrect"><b>Ý ${String.fromCharCode(64 + i)}:</b> 🎲 Sai! ${userAnswerText} → Đúng là: <b>${correctAnswerText}</b></div>`;
+                    }
+                }
+                const tfPoints = getTfPoints(tfCorrectCount);
+                totalScore += tfPoints;
+                tfTotalPoints += tfPoints;
+                tfResultHtml += `<h5>Câu ${EXAM_CONFIG.mcq.count + qnum}: ${tfCorrectCount}/4 ý đúng ⟹ Được ${tfPoints.toFixed(2)} điểm</h5>` + tfDetailHtml;
+            }
+            tfResultHtml += `</div>`;
+            resultDetailsHtml += tfResultHtml;
+
+            let fibCorrect = 0;
+            for (let i = 1; i <= EXAM_CONFIG.fillIn.count; i++) {
+                const inputs = document.querySelectorAll(`.fill-in-the-blank-container[data-fib-id="${i}"] input`);
+                const userAnswer = Array.from(inputs).map(input => input.value).join('').trim();
+                const correctAnswer = currentAnswers[`fib${i}`];
+                if (userAnswer === correctAnswer) {
+                    totalScore += EXAM_CONFIG.fillIn.pointsEach;
+                    fibCorrect++;
+                    resultDetailsHtml += `<div class="result-item correct"><b>Câu ${EXAM_CONFIG.mcq.count + EXAM_CONFIG.trueFalse.count + i}:</b> 🌟 Trúng số! (${userAnswer})</div>`;
+                } else {
+                    resultDetailsHtml += `<div class="result-item incorrect"><b>Câu ${EXAM_CONFIG.mcq.count + EXAM_CONFIG.trueFalse.count + i}:</b> 🎰 Trượt rồi! Bạn điền: ${userAnswer || 'Chưa điền'} → Đáp án: <b>${correctAnswer}</b></div>`;
+                }
+            }
+
+            resultsDiv.style.display = 'block';
+            scoreEl.innerHTML = `${totalScore.toFixed(2)} <span style="font-size: 0.4em; color: var(--ink-blue);">điểm</span>`;
+            
+            let summaryHtml = `
+                <div style="background: rgba(255,255,255,0.3); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                    <h4 style="text-align: center; color: var(--ink-blue); margin-bottom: 10px;">📋 TỔNG KẾT ĐIỂM</h4>
+                    <p><b>Phần I (Trắc nghiệm):</b> ${mcqCorrect}/18 câu đúng = ${(mcqCorrect * 0.25).toFixed(2)}/4.5 điểm</p>
+                    <p><b>Phần II (Đúng/Sai):</b> ${tfTotalPoints.toFixed(2)}/4.0 điểm</p>
+                    <p><b>Phần III (Trả lời ngắn):</b> ${fibCorrect}/6 câu đúng = ${(fibCorrect * 0.25).toFixed(2)}/1.5 điểm</p>
+                    <hr style="margin: 10px 0;">
+                    <p><b>TỔNG ĐIỂM:</b> ${totalScore.toFixed(2)}/10.0 điểm</p>
+                </div>`;
+            resultDetailsEl.innerHTML = summaryHtml + resultDetailsHtml;
+
+            gradeSectionEl.style.display = 'block';
+            finalGradeEl.textContent = `${totalScore.toFixed(2)}/10.0 điểm`;
+            gradeCommentEl.textContent = getGradeComment(totalScore);
+
+            const historyEntry = {
+                date: new Date().toLocaleDateString('vi-VN'),
+                examName: getRandomItem(RANDOM_EXAM_NAMES),
+                studentName: studentNameEl.value || "Vô danh",
+                studentId: studentIdEl.value || "N/A",
+                examCode: examCodeEl.textContent,
+                score: totalScore.toFixed(2)
+            };
+            scoreHistory.unshift(historyEntry);
+            if(scoreHistory.length > 20) scoreHistory.pop();
+            localStorage.setItem('khoanhluiHistory_v2', JSON.stringify(scoreHistory));
+            
+            updateHistoryDisplay();
+            resultsDiv.scrollIntoView({ behavior: 'smooth' });
+            console.log(`Điểm: ${totalScore.toFixed(2)}/10.0`);
+        });
+
+        function updateHistoryDisplay() {
+            if (scoreHistory.length > 0) {
+                showHistoryBtn.style.display = 'block';
+                historyTableBody.innerHTML = scoreHistory.map(entry => `
+                    <tr>
+                        <td>${entry.date}</td>
+                        <td>${entry.examName}</td>
+                        <td>${entry.studentName}</td>
+                        <td>${entry.studentId}</td>
+                        <td>${entry.examCode}</td>
+                        <td><b>${entry.score}đ</b></td>
+                    </tr>
+                `).join('');
+            } else {
+                showHistoryBtn.style.display = 'none';
+            }
+        }
+        
+        showHistoryBtn.onclick = () => {
+            historyModal.style.display = 'block';
+        };
+        closeHistoryModal.onclick = () => {
+            historyModal.style.display = 'none';
+        };
+        window.onclick = (event) => {
+            if (event.target == historyModal) {
+                historyModal.style.display = 'none';
+            }
+        };
+
+        updateHistoryDisplay();
+        console.log('Khởi tạo hoàn tất! Ngân hàng đề thi đã sẵn sàng với tất cả tính năng!');
+    });
+    </script>
+</body>
+</html>
